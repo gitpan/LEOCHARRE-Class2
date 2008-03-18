@@ -1,0 +1,7 @@
+t/Person.pm
+t/11_Person.t
+lib/LEOCHARRE/Class2.pm
+Makefile.PL
+MANIFEST
+
+META.yml                                 Module meta-data (added by MakeMaker)
