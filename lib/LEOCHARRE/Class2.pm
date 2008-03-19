@@ -5,11 +5,12 @@ use vars qw($VERSION @ISA @EXPORT);
 use Exporter;
 @ISA = qw/Exporter/;
 @EXPORT = qw(make_constructor make_accessor_setget);
-$VERSION = sprintf "%d.%02d", q$Revision: 1.2 $ =~ /(\d+)/g;
-
+$VERSION = sprintf "%d.%02d", q$Revision: 1.3 $ =~ /(\d+)/g;
+#use Smart::Comments '###';
 
 sub make_constructor {
    my $class = shift;
+   ### $class
    *{"$class\::new"} = sub {
       my ($class,$self) = @_;
       $self||={};
@@ -23,29 +24,36 @@ sub make_accessor_setget {
    my $class = shift;
    defined $class or die;
    
-   my ($arg, $ref, $name, $default_value);
+   my ($arg);
    
    METHOD : while (scalar @_){
       $arg = shift;      
       defined $arg or die('1.arguments must be scalars, array refs, or hash refs, not undef or false');    
       
-      if ( $ref = ref $arg ){
-      
+      ### $arg
+      if ( my $ref = ref $arg ){
+         
          if ( $ref eq 'ARRAY' ){
-            ($name, $default_value) = ($arg->[0], $arg->[1]);
+            my ($name, $default_value) = ($arg->[0], $arg->[1]);
             _make($class, $name, $default_value);
+            ### array
+            ### $name
+            ### $default_value
             next METHOD;
          }
          
          elsif ( $ref eq 'HASH' ){
-            while( ($name, $default_value) = each %$arg ){
-               _make($class, $name, $default_value);
+            ### hash
+            while( my ($name, $default_value) = each %$arg ){
+               _make($class, $name, $default_value);               
+               ### $name
+               ### $default_value
             }
             next METHOD;
          }
          
          else {
-            die('2.arguments must be scalars, array refs, or hash refs, not undef or false');
+            die("2.arguments must be scalars, array refs, or hash refs, not undef or false or '$ref'");
          }
       }
 
@@ -53,34 +61,81 @@ sub make_accessor_setget {
 
       _make($class,$arg);
       
+      ### not ref
+      ### $arg
    }
 
    
 
 
-   sub _make {
-      my($class,$name,$default) = @_;
-      my $namespace = "$class\::$name";      
-      ${$namespace} = $default_value; # may be undef, that's ok
-      *{$namespace} = sub {
-         my ($self,$val) = @_;
-      
-         if( defined $val ){ # store it in object instance only
-            $self->{$name} = $val;
-         }
-
-         unless( defined $self->{$name} ){
-                     
-            if( defined ${$namespace} ){# check if it's defined in the class default
-               $self->{$name} = ${$namespace};
-            }
-         }
-         return $self->{$name}; # may still be undef, that's ok
-      }; 
-   }   
+  
 }
 
+   sub _make {
+      my($_class,$_name,$_default_value) = @_;
 
+      my $namespace = "$_class\::$_name";      
+
+      #if (defined $_default_value ){
+      #   ${$namespace} = $_default_value;
+      #}
+
+
+      *{$namespace} = sub {
+         my $self = shift;
+         my ($val) = @_;
+      
+         if( defined $val ){ # store it in object instance only
+            $self->{$_name} = $val;
+         }
+
+         # if the key does not exist and we DO have a default in the class...
+         if( ! exists $self->{$_name} ){
+
+            if( defined $_default_value ){ # if in class data
+
+               # BUT, if it is a ref, COPY it
+
+               # IS A REF:
+               if ( my $ref = ref $_default_value ){
+
+                  if ($ref eq 'ARRAY'){
+                     ### array
+                     $self->{$_name} = [];
+                     for(@$_default_value){
+                        push @{$self->{$_name}}, $_;
+                     }
+                  }
+
+                  elsif( $ref eq 'HASH' ){
+                     ### hash
+                     #my %h = %{${$namespace}};
+                     $self->{$_name} = {};
+                     for(keys %$_default_value){ 
+                        $self->{$_name}->{$_} = $_default_value->{$_};
+                     }
+                  }
+
+                  elsif ( $ref eq 'SCALAR' ){
+                     ### scalar
+                     $self->{$_name} = $$_default_value;                  
+                  }
+                  else {
+                     die("dont know how to use '$ref' ref as a default");
+                  }
+               }
+
+
+               # IS NOT A REF:
+               else {
+                  $self->{$_name} = $_default_value;
+               }
+            }
+            
+         }
+         return $self->{$_name}; # may still be undef, that's ok
+      }; 
+   } 
 
 #sub make_accessor_errstr {
 #   my $class = shift;
@@ -178,6 +233,42 @@ Our class being named 'My::House', we now have
 Value in object instance is stored in self
 Thus, if you provide to the constructor a 'self' hashref that specifies a 'name', the method name 
 would return that value.
+
+=head1 CAVEATS
+
+=item class wide defaults
+
+Please note, if you set a default value to be an anon ref, this is indeed set for the whole class.
+BUT, when an object is intanced, the instance data will actually hold a COPY of the value.
+
+For example:
+
+   Neighborhood->make_accessor_setget([ houses => ['green','red'] ]);
+
+Would normally cause all object instances of Neighborhood to refer to the same houses anon array ref.
+We don't want that, we just want to use that as a default.
+So the above will actually result in
+
+$Neighborhood::houses = $your_ref
+
+Don't think too hard about it.
+
+=item resetting methods that had defaults
+
+If you provide a default and then you set it to undef, we do not load the defaults again..
+
+   __PACKAGE__->make_accessor_setget([ name => 'leo' ]);
+
+   $self->{name} = undef;
+
+   $self->name; # returns undef
+   
+Basically it means that if the blessed hashref does not have the method data key, THEN we do
+attempt to load a default.
+This is so you don't get unexpected results.
+
+
+
 
 
 
