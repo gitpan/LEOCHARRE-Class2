@@ -9,7 +9,7 @@ __PACKAGE__->make_accessor_setget(
    'name_last',
    [ 'inventory' => [qw(various defaults here)] ],
    [ age => 19 ], 
-   { speed => 348, pants => 27, hang => undef },   
+   { speed => 348, pants => 27, hang => undef }, 
 );
 
 __PACKAGE__->make_accessor_setget({ 

@@ -3,7 +3,7 @@ use strict;
 use lib './t';
 use lib './lib';
 use Person;
-#use Smart::Comments '###';
+use Smart::Comments '###';
 ok(1);
 
 my $f = Person->new({ hang => 'luster' });
@@ -16,10 +16,11 @@ ok( $f->speed );
 ok( $f->age == 19 );
 
 my $i = $f->inventory;
+ok ref $i eq 'ARRAY';
 ### $i
 
 ok( ! $f->name_last );
-$f->name_last('charre');
+ok $f->name_last('charre') eq 'charre';
 
 my $i2 = $f->inventory([qw(many things here)]);
 ### $i2
@@ -75,7 +76,6 @@ sub test_person {
    $n->name_last('Ticelli');
 
    ok($n->name eq $name );
-
    
    my $adding_count = scalar @$housing;
    ### $adding_count
@@ -89,7 +89,7 @@ sub test_person {
          or die();
 
 
-
+   
 
 
 }

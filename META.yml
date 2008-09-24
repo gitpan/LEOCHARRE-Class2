@@ -1,12 +1,17 @@
-# http://module-build.sourceforge.net/META-spec.html
-#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
-name:         LEOCHARRE-Class2
-version:      1.03
-version_from: lib/LEOCHARRE/Class2.pm
-installdirs:  site
-requires:
-    Exporter:                      0
-    Test::Simple:                  0
-
-distribution_type: module
-generated_by: ExtUtils::MakeMaker version 6.30
+--- #YAML:1.0
+name:                LEOCHARRE-Class2
+version:             1.11
+abstract:            ~
+license:             ~
+author:              ~
+generated_by:        ExtUtils::MakeMaker version 6.44
+distribution_type:   module
+requires:     
+    Cwd:                           3.2701
+    Exporter:                      5.58
+    Person:                        0
+    Smart::Comments:               1.0.2
+    Test::Simple:                  0.74
+meta-spec:
+    url:     http://module-build.sourceforge.net/META-spec-v1.3.html
+    version: 1.3

@@ -4,9 +4,19 @@ no strict 'refs';
 use vars qw($VERSION @ISA @EXPORT);
 use Exporter;
 @ISA = qw/Exporter/;
-@EXPORT = qw(make_constructor make_accessor_setget);
-$VERSION = sprintf "%d.%02d", q$Revision: 1.3 $ =~ /(\d+)/g;
-#use Smart::Comments '###';
+@EXPORT = qw(
+make_constructor
+make_constructor_init
+make_count_for
+make_accessor_setget_aref
+make_method_counter
+make_accessor_setget
+make_accessor_setget_pathondisk
+make_accessor_setget_ondisk_file
+make_accessor_setget_ondisk_dir
+);
+$VERSION = sprintf "%d.%02d", q$Revision: 1.11 $ =~ /(\d+)/g;
+# use Smart::Comments '###';
 
 sub make_constructor {
    my $class = shift;
@@ -19,123 +29,259 @@ sub make_constructor {
    };
 }
 
+sub make_constructor_init {
+   my $class = shift;
+   ### $class
+   *{"$class\::new"} = sub {
+      my ($class,$self) = @_;
+      $self||={};
+      bless $self, $class;
+      if ($class->can('init')){
+         $self->init;
+      }
+      return $self;
+   };
+}
+
+
 
 sub make_accessor_setget {
    my $class = shift;
    defined $class or die;
+
+   for ( ___resolve_args(@_) ){
+      _make_setget($class,@$_);
+   }  
+}
+
+sub make_accessor_setget_ondisk_file {
+   my $class = shift;
+   defined $class or die;
+
+   for ( ___resolve_args(@_) ){
+      _make_setget_ondisk_file($class,@$_);
+   }  
+}
+
+sub make_accessor_setget_ondisk_dir {
+   my $class = shift;
+   defined $class or die;
+
+   for ( ___resolve_args(@_) ){
+      _make_setget_ondisk_dir($class,@$_);
+   }  
+}
+
+sub make_accessor_setget_aref {
+   my $class = shift;
+   defined $class or die;
+   for ( ___resolve_args(@_) ){
+      _make_setget_aref($class,@$_);
+   }  
+}
+
+sub make_method_counter {
+   my $class = shift;
+   defined $class or die;
+   for( ___resolve_args(@_) ){
+      _make_method_counter($class,@$_);
+   }
+}
+sub make_count_for {
+   my $class = shift;
+   defined $class or die;
+   for( ___resolve_args(@_) ){
+      _make_count_for($class,@$_);
+   }
+}
+
+
+# THE REST ARE PRIVATE METHODS
+
+sub ___resolve_args {   
+
+   my @resolved_args;
    
-   my ($arg);
-   
+   # each one is
+   #  accessor_name, accessor_default_value (can be undef)
+
    METHOD : while (scalar @_){
-      $arg = shift;      
-      defined $arg or die('1.arguments must be scalars, array refs, or hash refs, not undef or false');    
-      
+      my $arg = shift;      
+      defined $arg 
+         or die('1.arguments must be scalars, array refs, or hash refs, not undef or false');      
+      ### ARG START -----------------------------------------------
       ### $arg
-      if ( my $ref = ref $arg ){
+      if ( my $ref = ref $arg ){         # make_accessor__ ( {} [])
          
          if ( $ref eq 'ARRAY' ){
-            my ($name, $default_value) = ($arg->[0], $arg->[1]);
-            _make($class, $name, $default_value);
-            ### array
-            ### $name
-            ### $default_value
+            ### arg is aref
+            push @resolved_args, $arg; # keep as is..            
             next METHOD;
          }
          
          elsif ( $ref eq 'HASH' ){
-            ### hash
+            ### arg is hashref
             while( my ($name, $default_value) = each %$arg ){
-               _make($class, $name, $default_value);               
-               ### $name
-               ### $default_value
+               push @resolved_args, [ $name, $default_value];               
             }
             next METHOD;
          }
          
-         else {
-            die("2.arguments must be scalars, array refs, or hash refs, not undef or false or '$ref'");
-         }
+         die("2.arguments must be scalars, array refs, or hash refs, "
+            ."not undef or false or '$ref'");         
       }
 
-      # else not a ref
-
-      _make($class,$arg);
+      ### arg is not ref
       
-      ### not ref
-      ### $arg
+      push @resolved_args, [$arg, undef];
    }
 
-   
-
-
-  
+   return @resolved_args;
 }
 
-   sub _make {
-      my($_class,$_name,$_default_value) = @_;
-
-      my $namespace = "$_class\::$_name";      
-
-      #if (defined $_default_value ){
-      #   ${$namespace} = $_default_value;
-      #}
 
 
-      *{$namespace} = sub {
-         my $self = shift;
-         my ($val) = @_;
-      
-         if( defined $val ){ # store it in object instance only
-            $self->{$_name} = $val;
-         }
+# DEFAULT SETGET ACCESSOR
+sub _make_setget {
+   my($_class,$_name,$_default_value) = @_;
+   my $namespace = "$_class\::$_name";      
 
-         # if the key does not exist and we DO have a default in the class...
-         if( ! exists $self->{$_name} ){
+   *{$namespace} = sub {
+      my $self = shift;
+      my ($val) = @_;
+   
+      if( defined $val ){ # store it in object instance only
+         $self->{$_name} = $val;
+      }
 
-            if( defined $_default_value ){ # if in class data
+      # if the key does not exist and we DO have a default in the class...
+      if( !exists $self->{$_name} and defined $_default_value ){ 
 
-               # BUT, if it is a ref, COPY it
-
-               # IS A REF:
-               if ( my $ref = ref $_default_value ){
-
-                  if ($ref eq 'ARRAY'){
-                     ### array
-                     $self->{$_name} = [];
-                     for(@$_default_value){
-                        push @{$self->{$_name}}, $_;
-                     }
-                  }
-
-                  elsif( $ref eq 'HASH' ){
-                     ### hash
-                     #my %h = %{${$namespace}};
-                     $self->{$_name} = {};
-                     for(keys %$_default_value){ 
-                        $self->{$_name}->{$_} = $_default_value->{$_};
-                     }
-                  }
-
-                  elsif ( $ref eq 'SCALAR' ){
-                     ### scalar
-                     $self->{$_name} = $$_default_value;                  
-                  }
-                  else {
-                     die("dont know how to use '$ref' ref as a default");
-                  }
+            # BUT, if it is a ref, COPY it
+            # IS A REF:
+            if ( my $ref = ref $_default_value ){
+               if ($ref eq 'ARRAY'){
+                  $self->{$_name} = [ @$_default_value ];
                }
-
-
-               # IS NOT A REF:
+               elsif( $ref eq 'HASH' ){
+                  $self->{$_name} = { %$_default_value };
+               }
+               elsif ( $ref eq 'SCALAR' ){
+                  $self->{$_name} = $$_default_value;                  
+               }
                else {
-                  $self->{$_name} = $_default_value;
+                  die("dont know how to use '$ref' ref as a default");
                }
             }
-            
+
+
+            # IS NOT A REF:
+            else {
+               $self->{$_name} = $_default_value;
+            }
+         
+         
+      }
+      return $self->{$_name}; # may still be undef, that's ok
+   }; 
+} 
+
+
+# counter
+sub _make_method_counter {
+   my ($class,$name) = @_;
+   my $namespace = "$class\::$name";      
+   my $datspace = "__$name\_counter__";
+
+   *{$namespace} = sub {
+      my($self,$val)=@_;
+      
+      $self->{$datspace} ||=0;
+      
+      if(defined $val){
+         $val=~/^\d+$/ or die("value to $namespace() must be digits");
+         if ($val) { #positive value
+            $self->{$datspace} = ($self->{$datspace} + $val);
          }
-         return $self->{$_name}; # may still be undef, that's ok
-      }; 
-   } 
+         else { # arg is 0, reset
+            $self->{$datspace} = 0;
+         }
+      }
+      return  $self->{$datspace};
+   };
+}
+
+
+sub _make_setget_ondisk_file {
+   my($_class,$_name,$_default_value) = @_;
+   my $namespace = "$_class\::$_name";      
+
+   
+   *{$namespace} = sub {
+      my $self = shift;
+      my ($val) = @_;
+   
+      if( defined $val ){ # store it in object instance only
+         my $abs = __resolve_f($val) or return;
+         $self->{$_name} = $abs;
+      }
+
+      # if the key does not exist and we DO have a default in the class...
+      if( !exists $self->{$_name} and defined $_default_value ){ 
+         $self->{$_name} = __resolve_f($_default_value) or die;
+      }
+      return $self->{$_name}; # may still be undef, that's ok
+   };
+
+   sub __resolve_f {
+      my $val = shift;
+      require Cwd;
+      my $a = Cwd::abs_path($val)
+         or warn("cant resolve $val")
+         and return;
+      -f $a or warn("not file on disk '$a'")
+         and return;
+      return $a;  
+   }
+
+} 
+
+sub _make_setget_ondisk_dir {
+   my($_class,$_name,$_default_value) = @_;
+   my $namespace = "$_class\::$_name";      
+   
+
+   *{$namespace} = sub {
+      my $self = shift;
+      my ($val) = @_;
+   
+      if( defined $val ){ # store it in object instance only
+        my $abs = __resolve_d($val) or return;
+        $self->{$_name} = $abs;
+      }
+
+      # if the key does not exist and we DO have a default in the class...
+      if( !exists $self->{$_name} and defined $_default_value ){ 
+        $self->{$_name} = __resolve_d($_default_value) or die;
+      }
+      return $self->{$_name}; # may still be undef, that's ok
+   }; 
+
+   sub __resolve_d {
+      my $val = shift;
+      require Cwd;
+      my $abs = Cwd::abs_path($val)
+            or warn("cannot revolve '$val' with Cwd::abs_path()")
+            and return;
+      -d $abs
+            or warn("'$abs' is not a directory")
+            and return;
+      return $abs;
+   }
+} 
+
+
+
 
 #sub make_accessor_errstr {
 #   my $class = shift;
@@ -143,132 +289,166 @@ sub make_accessor_setget {
 #}
 
 
+# validate ondisk file or dir
+
+sub _make_method_validate_ondisk_dir {
+   my ($class,$name)= @_;
+
+   my $namespace = "$class\::$name";      
+   *{$namespace} = sub {
+      my ($self,$val) = @_;
+      $val or return; # croak, die, warn ??
+
+      require Cwd;
+      my $abs = Cwd::abs_path($val) or return;
+      -d $abs and return $abs;
+      return 0;
+   }
+}
+sub _make_method_validate_ondisk_file {
+   my ($class,$name)= @_;
+
+   my $namespace = "$class\::$name";      
+   *{$namespace} = sub {
+      my ($self,$val) = @_;
+      $val or return; # croak, die, warn ??
+
+      require Cwd;
+      my $abs = Cwd::abs_path($val) or return;
+      -f $abs and return $abs;
+      return 0;
+   }
+}
+
+
+
+
+
+
+
+# clear methods
+sub _make_method_clear { 
+   my ($class,$name)= @_;
+
+   my $namespace = "$class\::$name";      
+   *{$namespace} = sub {
+      my $self = shift;
+      $self->{$namespace} = undef;
+      return 1;
+   }
+}
+sub _make_method_clear_hashref { 
+   my ($class,$name)= @_;
+
+   my $namespace = "$class\::$name";      
+   *{$namespace} = sub {
+      my $self = shift;
+      $self->{$namespace} = {};
+      return 1;
+   }
+}
+sub _make_method_clear_arrayref { 
+   my ($class,$name)= @_;
+
+   my $namespace = "$class\::$name";      
+   *{$namespace} = sub {
+      my $self = shift;
+      $self->{$namespace} = [];
+      return 1;
+   }
+}
+
+
+
+
+
+
+# TODO, check if subs exist alreaddy? can() 
+# should we do this or not?
+
+
+# setget arrayref
+sub _make_setget_aref {
+   my($_class, $_name, $_default_value) = @_;
+
+   my $namespace = "$_class\::$_name";      
+   my $namespace_count = "$_class\::$_name\_count";
+
+   *{$namespace} = sub {
+      my $self = shift;
+      my ($val) = @_;
+   
+      if( defined $val ){ # store it in object instance only
+         ### 343 VAL
+         ref $val eq 'ARRAY' or die("must be array ref arg");
+         $self->{$_name} = $val;
+      }
+
+      # if the key does not exist and we DO have a default in the class...
+      if( !exists $self->{$_name}){ 
+
+         if ( defined $_default_value ){
+            ### 350 DEF
+            $self->{$_name} = [ @$_default_value ];         
+         }
+         else {
+            ### NON
+            $self->{$_name} = [];
+         }
+      }
+
+      wantarray ? return @{$self->{$_name}} : return $self->{$_name};
+   }; 
+   #TODO, right now if undef, we set to [], is this teh behaviour we want?
+
+   _make_count_for($_class, $_name);
+} 
+
+
+
+
+sub _make_count_for {
+   my($class, $methodorkey) = @_;
+
+   my $namespace = "$class\::$methodorkey\_count";      
+
+   *{$namespace} = sub {
+      my $self = shift;
+
+      my $thing;
+
+      # object method?
+      if ($self->can($methodorkey)){
+         $thing = $self->$methodorkey;
+      }
+      # object key?
+      elsif( exists $self->{$methodorkey}){
+         $thing = $self->{$methodorkey};
+      }
+      
+      # die???, NO NO.. we do want to return if nothing.. if we want a method that just counts
+      # a value in the object instance, taht's all
+      else {
+         return 0; # ???
+         #die;
+      }
+
+
+      # ok... now what..
+      my $ref = ref $thing;
+      if( $ref and $ref eq 'ARRAY'){
+         return scalar @$thing;
+      }
+      elsif( $ref and $ref eq 'HASH'){
+         return scalar keys %$thing;
+      }
+      # else ???
+      # die??
+      return 0; # ???
+   };
+
+}
+
+
 
 1;
-
-
-
-__END__
-
-=pod
-
-=head1 NAME
-
-LEOCHARRE::Class2
-
-=head1 METHODS
-
-=head2 make_constructor()
-
-   __PACKAGE__->make_constructor();
-
-creates normal blessed object from optional hashref
-
-
-=head2 make_accessor_setget()
-
-argument is name of accessor to create in class.
-can provide a list of names.
-
-optionally, if the argument is an array ref, the second element should be the default value to set.
-
-This example creates 'model', 'year' and 'make' setget methods in the current class:
-
-   __PACKAGE__->make_accessor_setget(
-      'model', 
-      'make', 
-      'year',
-   );
-
-This is example is the same but sets defaults for make and year
-
-   __PACKAGE__->make_accessor_setget(
-      'model', 
-      [ 'make' => 'toyota' ], 
-      [ 'year' => '1999'   ],
-   );
-
-If those values are passed to the constructor or via method, they change..
-
-
-   my $o = Thing->new({ make => 'ford' });
-   $o->year(2001);   # changes to 2001
-   $o->year;         # returns 2001
-   $o->model;        # returns undef
-   $o->make;         # returns ford
-   
-
-You can also pass a hashref as argument to make setget methods, keys are names, vals are 
-the default values..
-
-   __PACKAGE__->make_accessor_setget({
-      model => undef,
-      make  => 'toyota',
-      year  => '1999',
-   });
-
-
-
-
-
-=head3 How the method created works
-
-This checks for a value in order of 
-1) in (a)rgument to method
-1) in (o)bject instance data (self)
-2) in (c)lass package
-
-If a value is provided, the object's data is changed, not the class.
-If no value is provided, we return the object's data, if none, the class, if none, undef.
-
-This example creates an object setget accessor that defaults to the name jimmy, stored in the class.
-
-   __PACKAGE__->make_accessor_setget(['name' => 'jimmy']);
-
-Our class being named 'My::House', we now have
-
-   &My::House::name
-   $My::House::name
-
-Value in object instance is stored in self
-Thus, if you provide to the constructor a 'self' hashref that specifies a 'name', the method name 
-would return that value.
-
-=head1 CAVEATS
-
-=item class wide defaults
-
-Please note, if you set a default value to be an anon ref, this is indeed set for the whole class.
-BUT, when an object is intanced, the instance data will actually hold a COPY of the value.
-
-For example:
-
-   Neighborhood->make_accessor_setget([ houses => ['green','red'] ]);
-
-Would normally cause all object instances of Neighborhood to refer to the same houses anon array ref.
-We don't want that, we just want to use that as a default.
-So the above will actually result in
-
-$Neighborhood::houses = $your_ref
-
-Don't think too hard about it.
-
-=item resetting methods that had defaults
-
-If you provide a default and then you set it to undef, we do not load the defaults again..
-
-   __PACKAGE__->make_accessor_setget([ name => 'leo' ]);
-
-   $self->{name} = undef;
-
-   $self->name; # returns undef
-   
-Basically it means that if the blessed hashref does not have the method data key, THEN we do
-attempt to load a default.
-This is so you don't get unexpected results.
-
-
-
-
-
-
