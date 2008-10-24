@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                LEOCHARRE-Class2
-version:             1.11
+version:             1.12
 abstract:            ~
 license:             ~
 author:              ~
@@ -9,7 +9,6 @@ distribution_type:   module
 requires:     
     Cwd:                           3.2701
     Exporter:                      5.58
-    Person:                        0
     Smart::Comments:               1.0.2
     Test::Simple:                  0.74
 meta-spec:

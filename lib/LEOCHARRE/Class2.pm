@@ -9,13 +9,14 @@ make_constructor
 make_constructor_init
 make_count_for
 make_accessor_setget_aref
+make_accessor_get
 make_method_counter
 make_accessor_setget
 make_accessor_setget_pathondisk
 make_accessor_setget_ondisk_file
 make_accessor_setget_ondisk_dir
 );
-$VERSION = sprintf "%d.%02d", q$Revision: 1.11 $ =~ /(\d+)/g;
+$VERSION = sprintf "%d.%02d", q$Revision: 1.12 $ =~ /(\d+)/g;
 # use Smart::Comments '###';
 
 sub make_constructor {
@@ -53,6 +54,16 @@ sub make_accessor_setget {
       _make_setget($class,@$_);
    }  
 }
+
+sub make_accessor_get {
+   my $class = shift;
+   defined $class or die;
+
+   for ( ___resolve_args(@_) ){
+      _make_get($class,@$_);
+   }  
+}
+
 
 sub make_accessor_setget_ondisk_file {
    my $class = shift;
@@ -185,6 +196,51 @@ sub _make_setget {
       return $self->{$_name}; # may still be undef, that's ok
    }; 
 } 
+
+# GET ACCESSOR
+
+sub _make_get {
+   my($_class,$_name,$_default_value) = @_;
+   my $namespace = "$_class\::$_name";     
+
+   *{$namespace} = sub {
+      my $self = shift;
+   
+      Carp::croak("This method does not take arguments.") if @_ and scalar @_;
+
+      # if the key does not exist and we DO have a default in the class...
+      if( !exists $self->{$_name} and defined $_default_value ){ 
+
+            # BUT, if it is a ref, COPY it
+            # IS A REF:
+            if ( my $ref = ref $_default_value ){
+               if ($ref eq 'ARRAY'){
+                  $self->{$_name} = [ @$_default_value ];
+               }
+               elsif( $ref eq 'HASH' ){
+                  $self->{$_name} = { %$_default_value };
+               }
+               elsif ( $ref eq 'SCALAR' ){
+                  $self->{$_name} = $$_default_value;                  
+               }
+               else {
+                  die("dont know how to use '$ref' ref as a default");
+               }
+            }
+
+
+            # IS NOT A REF:
+            else {
+               $self->{$_name} = $_default_value;
+            }
+         
+         
+      }
+      return $self->{$_name}; # may still be undef, that's ok
+   }; 
+
+}
+
 
 
 # counter

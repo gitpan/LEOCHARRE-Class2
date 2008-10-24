@@ -9,7 +9,6 @@ WriteMakefile(
    PREREQ_PM => {
       'Cwd'                               => '3.2701',
       'Exporter'                          => '5.58',
-      'Person'                            => '0',
       'Smart::Comments'                   => '1.0.2',
       'Test::Simple'                      => '0.74',
    },
