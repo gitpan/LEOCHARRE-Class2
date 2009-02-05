@@ -180,6 +180,65 @@ If class cannot method, then it seeks in object.
 
 
 
+=head2 make_accessor_setget_unique_array()
+
+
+   __PACKAGE__->make_method_setget_unique_array({ houses => [qw(one two three)] });
+
+   $self->houses_count; # returns 3
+   
+   $self->houses_add('lovely');
+   $self->houses_count; # now 4
+   
+   $self->houses_add('lovely');
+   $self->houses_count; # still 4!
+
+   
+   $self->houses_delete('lovely');
+   $self->houses_count; # 3
+
+   $self->houses_clear;
+   $self->houses_count; # 0
+   
+
+Adds following methods
+
+=head3 $name()
+
+Takes no argument.
+Returns array.
+
+=head3 $name\_add()
+
+Argument is element.
+Returns true.
+Remember this is a unique array, if you add same thing, you are really replacing.
+
+=head3 $name\_delete()
+
+Argument is element.
+
+=head3 $name\_exists()
+
+Argument is element, returns bool if there.
+
+=head3 $name\_clear()
+
+Takes no argument.
+Clears all contents.
+
+=head3 $name\_count()
+
+Takes no argument.
+Returns count of elements. Returns 0 if none.
+
+=head3 $name\_href()
+
+Takes no argument.
+Returns hashref to actual data.
+Always returns a hash ref, even if {}.
+
+
 
 
 

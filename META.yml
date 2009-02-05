@@ -1,16 +1,22 @@
 --- #YAML:1.0
-name:                LEOCHARRE-Class2
-version:             1.12
-abstract:            ~
-license:             ~
-author:              ~
-generated_by:        ExtUtils::MakeMaker version 6.44
-distribution_type:   module
-requires:     
-    Cwd:                           3.2701
-    Exporter:                      5.58
-    Smart::Comments:               1.0.2
-    Test::Simple:                  0.74
+name:               LEOCHARRE-Class2
+version:            1.14
+abstract:           ~
+author:  []
+license:            unknown
+distribution_type:  module
+configure_requires:
+    ExtUtils::MakeMaker:  0
+requires:
+    Cwd:              3.2701
+    Exporter:         5.58
+    Smart::Comments:  1.0.2
+    Test::Simple:     0.74
+no_index:
+    directory:
+        - t
+        - inc
+generated_by:       ExtUtils::MakeMaker version 6.48
 meta-spec:
-    url:     http://module-build.sourceforge.net/META-spec-v1.3.html
-    version: 1.3
+    url:      http://module-build.sourceforge.net/META-spec-v1.4.html
+    version:  1.4

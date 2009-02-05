@@ -1,3 +1,13 @@
+2009-02-05 12:35  cvs
+
+	* lib/LEOCHARRE/: Class2.pm, Class2.pod: added
+	  make_accessor_setget_unique_array() , like the hash manipulator
+
+2008-10-27 14:37  cvs
+
+	* Makefile.PL, lib/LEOCHARRE/Class2.pm: made so calling constructor
+	  without arg is ok
+
 2008-10-24 13:47  cvs
 
 	* lib/LEOCHARRE/: Class2.pm, Class2.pod: added make_accessor_get()
@@ -34,12 +44,12 @@
 	* lib/LEOCHARRE/Class2.pm, t/14_setgetondisk.t: added
 	  make_method_counter()
 
-2008-03-18 10:50  cvs
+2008-03-18 09:50  cvs
 
 	* MANIFEST, Makefile.PL, lib/LEOCHARRE/Class2.pm, t/11_Person.t,
 	  t/Person.pm: Initial revision
 
-2008-03-18 10:50  cvs
+2008-03-18 09:50  cvs
 
 	* MANIFEST, Makefile.PL, lib/LEOCHARRE/Class2.pm, t/11_Person.t,
 	  t/Person.pm: init

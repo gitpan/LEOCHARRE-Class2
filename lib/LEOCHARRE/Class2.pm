@@ -15,9 +15,11 @@ make_accessor_setget
 make_accessor_setget_pathondisk
 make_accessor_setget_ondisk_file
 make_accessor_setget_ondisk_dir
+make_accessor_setget_unique_array
 );
-$VERSION = sprintf "%d.%02d", q$Revision: 1.12 $ =~ /(\d+)/g;
+$VERSION = sprintf "%d.%02d", q$Revision: 1.14 $ =~ /(\d+)/g;
 # use Smart::Comments '###';
+use Carp;
 
 sub make_constructor {
    my $class = shift;
@@ -25,6 +27,10 @@ sub make_constructor {
    *{"$class\::new"} = sub {
       my ($class,$self) = @_;
       $self||={};
+
+      (defined $self and ref $self and ref $self eq 'HASH')
+         or confess("Argument to constructor must be a hash ref");
+
       bless $self, $class;
       return $self;
    };
@@ -36,6 +42,11 @@ sub make_constructor_init {
    *{"$class\::new"} = sub {
       my ($class,$self) = @_;
       $self||={};
+      
+      (defined $self and ref $self and ref $self eq 'HASH')
+         or confess("Argument to constructor must be a hash ref");
+
+
       bless $self, $class;
       if ($class->can('init')){
          $self->init;
@@ -90,6 +101,16 @@ sub make_accessor_setget_aref {
       _make_setget_aref($class,@$_);
    }  
 }
+
+sub make_accessor_setget_unique_array {
+   my $class = shift;
+   defined $class or die;
+   for ( ___resolve_args(@_) ){
+      _make_setget_unique_array($class,@$_);
+   }  
+}
+
+
 
 sub make_method_counter {
    my $class = shift;
@@ -414,6 +435,111 @@ sub _make_method_clear_arrayref {
    }
 }
 
+
+
+
+#use Smart::Comments '####';
+
+# _make_setget_unique_array()
+sub _make_setget_unique_array {
+   my($_class, $_name, $_default_value) = @_;
+
+   #### $_default_value
+   #### $_name
+
+   if( defined $_default_value ){
+      ref $_default_value 
+         and ref $_default_value eq 'ARRAY'
+         or confess("Default value to $_class '$_name' must be array ref");
+   }
+
+   my $namespace        = "$_class\::$_name";      
+   
+   no strict 'refs';
+
+   # method name
+   my $method_name_href    = "$_name\_href";
+   my $method_name_count   = "$_name\_count";
+   my $method_name_delete  = "$_name\_delete";   
+   my $method_name_add     = "$_name\_add";
+   my $method_name_exists  = "$_name\_exists";
+   my $method_name_clear   = "$_name\_clear";
+
+   # return array   
+   *{"$_class\::$_name"} = sub {
+      my $self = shift;      
+      keys %{$self->$method_name_href}
+   };
+
+
+   # return count
+   *{"$_class\::$method_name_count"} = sub {      
+      scalar keys %{$_[0]->$method_name_href}
+   };
+
+   # add
+   *{"$_class\::$method_name_add"} = sub {
+      my $self = shift;
+      map{ $self->$method_name_href->{$_}++ } grep { defined $_ } @_;      
+      return
+   };
+
+   # delete
+   *{"$_class\::$method_name_delete"} = sub {
+      my $self = shift;
+      map{ delete $self->$method_name_href->{$_} } grep { defined $_ } @_;
+      return
+   };
+
+   # exists
+   *{"$_class\::$method_name_exists"} = sub {
+      my $self = shift;
+      exists $self->$method_name_href->{$_[0]} ? 1 : 0
+   };
+
+   # clear
+   *{"$_class\::$method_name_clear"} = sub {
+      my $self = shift;
+      $self->{$method_name_href} = {};
+      return
+   };
+
+   # actual data holder..... the href.....
+
+   
+   
+   # if the key does not exist and we DO have a default in the class...
+   *{"$_class\::$method_name_href"} = sub {
+      my $self = shift;
+
+      if ( ! exists $self->{$method_name_href} ){
+         #### apparently not init yet
+         
+         if ( exists $self->{$_name} ){
+            #### was in constructor
+            ref $self->{$_name}
+               and ref $self->{$_name} eq 'ARRAY'
+               or confess("value for $_class $_name must be array ref");
+
+            @{$self->{$method_name_href}}{ @{$self->{$_name}} } = ();
+         }
+         elsif ( defined $_default_value ){ # was already checked for ARRAY ref
+            #### had default value               
+            @{$self->{$method_name_href}}{ @$_default_value } = ();
+         }
+         
+         else { 
+            #### blank value
+            $self->{$method_name_href} = {};
+         }
+      }
+      $self->{$method_name_href}
+   };
+
+}
+
+
+#
 
 
 
