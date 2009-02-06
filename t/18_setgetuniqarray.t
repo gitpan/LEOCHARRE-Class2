@@ -75,7 +75,7 @@ ok $count70;
 
 ok $i->hands_exists('red'), 'red hand there';
 
-$i->hands_delete('red');
+ok $i->hands_delete('red');
 ok( 1,'deleted ref hand..');
 
 my $count71 = $i->hands_count;
@@ -85,12 +85,12 @@ ok( $count70 == ($count71 + 1 ), "now old count is one more than present count (
 
 
 ok( ! $i->hands_exists('red'), 'now red hand no longer there');
-$i->hands_add('red');
+ok $i->hands_add('red');
 ok( $i->hands_exists('red') , 'now added red hand again!');
 my $k = $i->hands_count;
 ok( $k, "count now '$k'");
 
-$i->hands_delete('red');
+ok $i->hands_delete('red');
 
 
 
@@ -119,4 +119,8 @@ ok !$i->hands_count;
 my $count_last = $i->hands_count;
 ### $count_last
 
+my $o = new AppThing;
 
+my $val = $o->hands_count;
+ok defined $val;
+ok $val == 0;

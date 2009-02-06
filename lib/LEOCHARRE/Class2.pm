@@ -17,7 +17,7 @@ make_accessor_setget_ondisk_file
 make_accessor_setget_ondisk_dir
 make_accessor_setget_unique_array
 );
-$VERSION = sprintf "%d.%02d", q$Revision: 1.14 $ =~ /(\d+)/g;
+$VERSION = sprintf "%d.%02d", q$Revision: 1.16 $ =~ /(\d+)/g;
 # use Smart::Comments '###';
 use Carp;
 
@@ -481,14 +481,14 @@ sub _make_setget_unique_array {
    *{"$_class\::$method_name_add"} = sub {
       my $self = shift;
       map{ $self->$method_name_href->{$_}++ } grep { defined $_ } @_;      
-      return
+      1;
    };
 
    # delete
    *{"$_class\::$method_name_delete"} = sub {
       my $self = shift;
       map{ delete $self->$method_name_href->{$_} } grep { defined $_ } @_;
-      return
+      1;
    };
 
    # exists
@@ -501,7 +501,7 @@ sub _make_setget_unique_array {
    *{"$_class\::$method_name_clear"} = sub {
       my $self = shift;
       $self->{$method_name_href} = {};
-      return
+      1;
    };
 
    # actual data holder..... the href.....
