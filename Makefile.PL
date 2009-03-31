@@ -3,17 +3,22 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
    NAME => 'LEOCHARRE::Class2',
    VERSION_FROM => 'lib/LEOCHARRE/Class2.pm',
+   
 
-
-   # gen /usr/bin/pmused by Wed Apr  9 05:26:24 EDT 2008 
+   # gen /usr/bin/pmused by Tue Mar 31 11:40:00 EDT 2009 
    PREREQ_PM => {
-      'Cwd'                               => '3.2701',
-      'Exporter'                          => '5.58',
-      'Smart::Comments'                   => '1.0.2',
-      'Test::Simple'                      => '0.74',
+      'Carp'                              => '1',
+      'Cwd'                               => '3',
+      'Exporter'                          => '5',
+      'Smart::Comments'                   => '1',
+      'Test::Simple'                      => '0',
    },
 
-
+   
+   LICENSE => 'perl',
+   
+   
+   
    EXE_FILES => [],
 );
 

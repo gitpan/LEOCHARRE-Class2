@@ -98,6 +98,11 @@ $href = $i->hands_href;
 ### $href
 print STDERR "\n---------------------line ".__LINE__."\n\n";
 
+my $aref = $i->hands_aref;
+### $aref
+print STDERR "\n---------------------line ".__LINE__."\n\n";
+
+
 
 
 

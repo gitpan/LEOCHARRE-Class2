@@ -1,17 +1,18 @@
 --- #YAML:1.0
 name:               LEOCHARRE-Class2
-version:            1.16
+version:            1.17
 abstract:           ~
 author:  []
-license:            unknown
+license:            perl
 distribution_type:  module
 configure_requires:
     ExtUtils::MakeMaker:  0
 requires:
-    Cwd:              3.2701
-    Exporter:         5.58
-    Smart::Comments:  1.0.2
-    Test::Simple:     0.74
+    Carp:             1
+    Cwd:              3
+    Exporter:         5
+    Smart::Comments:  1
+    Test::Simple:     0
 no_index:
     directory:
         - t

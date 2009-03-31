@@ -199,6 +199,9 @@ If class cannot method, then it seeks in object.
 
    $self->houses_clear;
    $self->houses_count; # 0
+
+   $self->houses_href;
+   $self->houses_aref;
    
 
 Adds following methods
@@ -214,31 +217,31 @@ Argument is element.
 Returns true.
 Remember this is a unique array, if you add same thing, you are really replacing.
 
-=head3 $name\_delete()
+=head3 $name _delete()
 
 Argument is element.
 
-=head3 $name\_exists()
+=head3 $name _exists()
 
 Argument is element, returns bool if there.
 
-=head3 $name\_clear()
+=head3 $name _clear()
 
 Takes no argument.
 Clears all contents.
 
-=head3 $name\_count()
+=head3 $name _count()
 
 Takes no argument.
 Returns count of elements. Returns 0 if none.
 
-=head3 $name\_href()
+=head3 $name _href()
 
 Takes no argument.
 Returns hashref to actual data.
 Always returns a hash ref, even if {}.
 
-
+=head3 $name _aref()
 
 
 

@@ -17,7 +17,7 @@ make_accessor_setget_ondisk_file
 make_accessor_setget_ondisk_dir
 make_accessor_setget_unique_array
 );
-$VERSION = sprintf "%d.%02d", q$Revision: 1.16 $ =~ /(\d+)/g;
+$VERSION = sprintf "%d.%02d", q$Revision: 1.17 $ =~ /(\d+)/g;
 # use Smart::Comments '###';
 use Carp;
 
@@ -459,6 +459,7 @@ sub _make_setget_unique_array {
 
    # method name
    my $method_name_href    = "$_name\_href";
+   my $method_name_aref    = "$_name\_aref";
    my $method_name_count   = "$_name\_count";
    my $method_name_delete  = "$_name\_delete";   
    my $method_name_add     = "$_name\_add";
@@ -468,9 +469,13 @@ sub _make_setget_unique_array {
    # return array   
    *{"$_class\::$_name"} = sub {
       my $self = shift;      
-      keys %{$self->$method_name_href}
+      sort keys %{$self->$method_name_href}
    };
 
+   # return array ref  
+   *{"$_class\::$method_name_aref"} = sub {      
+      [ sort keys %{$_[0]->$method_name_href} ]
+   };
 
    # return count
    *{"$_class\::$method_name_count"} = sub {      
