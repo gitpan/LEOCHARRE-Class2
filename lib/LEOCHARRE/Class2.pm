@@ -17,7 +17,7 @@ make_accessor_setget_ondisk_file
 make_accessor_setget_ondisk_dir
 make_accessor_setget_unique_array
 );
-$VERSION = sprintf "%d.%02d", q$Revision: 1.17 $ =~ /(\d+)/g;
+$VERSION = sprintf "%d.%02d", q$Revision: 1.18 $ =~ /(\d+)/g;
 # use Smart::Comments '###';
 use Carp;
 
@@ -468,8 +468,12 @@ sub _make_setget_unique_array {
 
    # return array   
    *{"$_class\::$_name"} = sub {
-      my $self = shift;      
-      sort keys %{$self->$method_name_href}
+      my $self = shift;   
+
+      map{ $self->$method_name_href->{$_}++ } grep { defined $_ } @_;
+
+      my @a = sort keys %{$self->$method_name_href};
+      wantarray ? @a : \@a;
    };
 
    # return array ref  

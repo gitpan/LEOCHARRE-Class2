@@ -1,3 +1,9 @@
+2009-05-07 14:55  cvs
+
+	* lib/LEOCHARRE/Class2.pm, lib/LEOCHARRE/Class2.pod,
+	  t/18_setgetuniqarray.t: made so setget unique array name method
+	  is also add() method
+
 2009-03-31 11:39  cvs
 
 	* lib/LEOCHARRE/Class2.pm, lib/LEOCHARRE/Class2.pod,

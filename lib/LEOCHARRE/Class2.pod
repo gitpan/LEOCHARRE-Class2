@@ -208,42 +208,43 @@ Adds following methods
 
 =head3 $name()
 
-Takes no argument.
-Returns array.
+If you provide argument, behaves as $name_add().
 
-=head3 $name\_add()
+Returns array or array ref depending on context.
+
+=head3 $name_add()
 
 Argument is element.
 Returns true.
 Remember this is a unique array, if you add same thing, you are really replacing.
 
-=head3 $name _delete()
+=head3 $name_delete()
 
 Argument is element.
 
-=head3 $name _exists()
+=head3 $name_exists()
 
 Argument is element, returns bool if there.
 
-=head3 $name _clear()
+=head3 $name_clear()
 
 Takes no argument.
 Clears all contents.
 
-=head3 $name _count()
+=head3 $name_count()
 
 Takes no argument.
 Returns count of elements. Returns 0 if none.
 
-=head3 $name _href()
+=head3 $name_href()
 
 Takes no argument.
 Returns hashref to actual data.
 Always returns a hash ref, even if {}.
 
-=head3 $name _aref()
+=head3 $name_aref()
 
-
+Takes no argument.
 
 
 

@@ -41,6 +41,8 @@ ok( $hc == 3 );
 ok $i->hands_count == $hc, "hands count is $hc";
 
 $i->hands_add('purple');
+
+
 ok $i->hands_exists('purple');
 
 
@@ -129,3 +131,23 @@ my $o = new AppThing;
 my $val = $o->hands_count;
 ok defined $val;
 ok $val == 0;
+
+
+ok_part('FURTHER COUNT');
+
+
+my $return = $o->hands_add('right','left');
+
+ok( $return," return val is '$return'");
+ok( $o->hands_count == 2, 'now hands count is 2');
+
+ok( $return = $o->hands('one'),' add via name alone' );
+### $return
+
+ok( $o->hands_count == 3, "now hands is 3");
+
+my @return = $o->hands;
+### @return
+ok( scalar @return == 3 );
+
+sub ok_part { printf STDERR "\n%s\n= @_\n\n", '-'x60; 1 }
