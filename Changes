@@ -1,3 +1,7 @@
+2009-05-15 09:33  cvs
+
+	* lib/LEOCHARRE/: Class2.pm, Class2.pod: added conf methods
+
 2009-05-07 14:55  cvs
 
 	* lib/LEOCHARRE/Class2.pm, lib/LEOCHARRE/Class2.pod,

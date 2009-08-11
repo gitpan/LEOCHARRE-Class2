@@ -7,6 +7,7 @@ use Exporter;
 @EXPORT = qw(
 make_constructor
 make_constructor_init
+make_conf
 make_count_for
 make_accessor_setget_aref
 make_accessor_get
@@ -17,7 +18,7 @@ make_accessor_setget_ondisk_file
 make_accessor_setget_ondisk_dir
 make_accessor_setget_unique_array
 );
-$VERSION = sprintf "%d.%02d", q$Revision: 1.18 $ =~ /(\d+)/g;
+$VERSION = sprintf "%d.%02d", q$Revision: 1.19 $ =~ /(\d+)/g;
 # use Smart::Comments '###';
 use Carp;
 
@@ -640,6 +641,47 @@ sub _make_count_for {
 
 }
 
+
+# BEGIN  CONF
+
+sub make_conf {
+   my $class = shift;
+   my $default_path = shift; # can be undef  
+
+    _make_setget($class, 'abs_conf', $default_path);
+
+   for my $name (qw(conf conf_load conf_save conf_keys)){
+      #$class->can($name) and warn("Class $class can already '$name()'");
+      *{"$class\::$name"} = \&$name;
+   }
+
+
+   sub conf { 
+      $_[0]->{conf} or $_[0]->conf_load;
+      $_[0]->{conf} ||= {};
+   }
+   sub conf_load { 
+      require YAML; 
+      my $a = $_[0]->abs_conf 
+         or warn "Can't load conf, missing abs_conf path."
+         and return;
+      -f $a 
+         or warn "Can't load conf, not on disk '$a'\n"
+         and return;
+
+      $_[0]->{conf} = YAML::LoadFile($a) 
+   }
+   sub conf_keys { my $c = $_[0]->conf or return; sort keys %$c }
+   sub conf_save { require YAML; YAML::DumpFile($_[0]->abs_conf,$_[0]->{conf}) }
+
+}
+
+
+
+
+
+
+# END CONF
 
 
 1;

@@ -78,6 +78,19 @@ To set a value, must be set in constructor, or in class default.
    $x->name; # returns joe
    $x->name('jane'); # throws exception
 
+=head2 make_conf()
+
+Optional argument is abs path to conf file, this is a yaml file.
+Adds the methods
+   
+   abs_conf()
+   conf()
+   conf_load()
+   conf_keys()
+   conf_save()
+
+conf_load() is called automatically.
+
 
 
 =head1 FILE RESOURCE METHODS

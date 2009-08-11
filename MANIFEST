@@ -12,5 +12,6 @@ t/17_get_accessor.t
 t/18_setgetuniqarray.t
 t/19_setgetuniqarray.t
 t/20_setgetuniquearray.t
+t/21_conf.t
 t/Person.pm
 META.yml                                 Module meta-data (added by MakeMaker)

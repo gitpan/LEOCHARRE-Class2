@@ -5,13 +5,14 @@ WriteMakefile(
    VERSION_FROM => 'lib/LEOCHARRE/Class2.pm',
    
 
-   # gen /usr/bin/pmused by Thu May  7 14:56:21 EDT 2009 
+   # gen /usr/bin/pmused by Fri May 15 09:34:34 EDT 2009 
    PREREQ_PM => {
       'Carp'                              => '1',
       'Cwd'                               => '3',
       'Exporter'                          => '5',
       'Smart::Comments'                   => '1',
       'Test::Simple'                      => '0',
+      'YAML'                              => '0.66',
    },
 
    
